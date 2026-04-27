@@ -31,6 +31,7 @@ Thumbs.db
 # Build outputs
 build/
 dist/
+.cache/
 
 # Flutter
 flutter_application/.dart_tool/
@@ -42,3 +43,4 @@ flutter_application/.flutter-plugins-dependencies
 # ESP-IDF
 SIN/build/
 station/build/
+station/.cache/

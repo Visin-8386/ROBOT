@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-03-14T00:00:00.000Z" agent="gitHubCopilot" etag="unused" version="20.4.3" type="device">
+  <diagram name="Robot Security Flowchart" id="diagram-1"><![CDATA[
+<mxGraphModel dx="1156" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="start" value="Khởi tạo hệ thống\nESP32 Motor, ESP32-CAM, Cảm biến, Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0B1020;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="320" y="20" width="360" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="main" value="Robot hoạt động liên tục\nTuần tra / Giám sát" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2937;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="320" y="110" width="360" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="sens-read" value="Đọc dữ liệu cảm biến:\nToF (distance), PIR" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#111827;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="40" y="210" width="260" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="sens-dec" value="Có vật cản gần?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#0d1321;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="120" y="280" width="140" height="80" as="geometry"/>
+    </mxCell>
+    <mxCell id="stop-robot" value="Dừng Robot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6b7280;fontColor=#000000" vertex="1" parent="1">
+      <mxGeometry x="110" y="380" width="160" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="avoid" value="Tránh vật cản:\nLùi / Rẽ trái / Rẽ phải" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#374151;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="80" y="440" width="240" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="sensor-alert" value="Publish robot/alert → Server / Web / DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065f46;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="60" y="520" width="280" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="cam-capture" value="Chụp ảnh từ camera\nESP32-CAM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="320" y="200" width="260" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="tcp" value="Truyền stream TCP :8765\n[4B len][JPEG]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E3A8A;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="320" y="270" width="260" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="preproc" value="Tiền xử lý + Tracking\nGaussianBlur / CLAHE / Unsharp\nSORT + Kalman (confirm ≥ 3 frames)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7c3aed;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="300" y="350" width="300" height="90" as="geometry"/>
+    </mxCell>
+    <mxCell id="yolo" value="AI nhận diện người\nMô hình YOLOv8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0ea5e9;fontColor=#000000" vertex="1" parent="1">
+      <mxGeometry x="320" y="460" width="260" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="detect-dec" value="Có phát hiện người?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#0b1220;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="320" y="540" width="160" height="80" as="geometry"/>
+    </mxCell>
+    <mxCell id="compute" value="Xác định tọa độ người\nTính toán Pan / Tilt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="270" y="640" width="260" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="send-chase" value="Gửi lệnh CHASE → ESP32 qua MQTT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f59e0b;fontColor=#000000" vertex="1" parent="1">
+      <mxGeometry x="260" y="720" width="300" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="update-db" value="Cập nhật sự kiện lên Web &amp; Lưu Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0b84a5;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="620" y="720" width="280" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="telegram" value="Telegram alert (30s cooldown)\nGửi ảnh + caption" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0ea5e9;fontColor=#000000" vertex="1" parent="1">
+      <mxGeometry x="620" y="640" width="280" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="mqtt-broker" value="MQTT Broker - Mosquitto\n:1883" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10b981;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="40" y="720" width="220" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="postgres" value="PostgreSQL \n:5432 (detection_events, sensor_alerts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e40af;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="940" y="520" width="240" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="fastapi" value="FastAPI / Web Dashboard\n:8000 (control, stream MJPEG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2563eb;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="940" y="640" width="240" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="topic1" value="Topic: robot/position (server → esp)" style="text;html=1;strokeColor=none;fontSize=11;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="620" y="520" width="220" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="topic2" value="Topic: robot/command (server → esp)" style="text;html=1;strokeColor=none;fontSize=11;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="620" y="540" width="220" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="topic3" value="Topic: robot/alert (esp → server)" style="text;html=1;strokeColor=none;fontSize=11;fontColor=#ffffff" vertex="1" parent="1">
+      <mxGeometry x="40" y="660" width="220" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="start" target="main">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="main" target="sens-read">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="main" target="cam-capture">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="sens-read" target="sens-dec">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#f97316" edge="1" parent="1" source="sens-dec" target="stop-robot">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#f97316" edge="1" parent="1" source="stop-robot" target="avoid">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#10b981" edge="1" parent="1" source="avoid" target="sensor-alert">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="sensor-alert" target="mqtt-broker">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="cam-capture" target="tcp">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="tcp" target="preproc">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="preproc" target="yolo">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="yolo" target="detect-dec">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#f97316" edge="1" parent="1" source="detect-dec" target="compute">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#f97316" edge="1" parent="1" source="compute" target="send-chase">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#10b981" edge="1" parent="1" source="send-chase" target="mqtt-broker">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#0ea5e9" edge="1" parent="1" source="detect-dec" target="telegram">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#111827" edge="1" parent="1" source="detect-dec" target="update-db">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="sensor-alert" target="postgres">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="update-db" target="postgres">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;html=1;strokeWidth=2;strokeColor=#99a0aa" edge="1" parent="1" source="mqtt-broker" target="fastapi">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="loop1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;endArrow=block;html=1;strokeWidth=1;strokeColor=#9ca3af" edge="1" parent="1" source="sensor-alert" target="main">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="loop2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;endArrow=block;html=1;strokeWidth=1;strokeColor=#9ca3af" edge="1" parent="1" source="update-db" target="main">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>
+]]></diagram>
+</mxfile>
