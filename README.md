@@ -7,14 +7,17 @@ Hệ thống robot an ninh tích hợp AI nhận diện người, điều khiể
 - [1. Tổng quan](#1-tổng-quan)
 - [2. Kiến trúc hệ thống](#2-kiến-trúc-hệ-thống)
 - [3. Tính năng chính](#3-tính-năng-chính)
-- [4. Cấu trúc dự án](#4-cấu-trúc-dự-án)
-- [5. Yêu cầu hệ thống](#5-yêu-cầu-hệ-thống)
-- [6. Khởi động nhanh](#6-khởi-động-nhanh)
-- [7. Cấu hình quan trọng](#7-cấu-hình-quan-trọng)
-- [8. API và MQTT contract](#8-api-và-mqtt-contract)
-- [9. Build firmware ESP32](#9-build-firmware-esp32)
-- [10. Tài liệu nội bộ](#10-tài-liệu-nội-bộ)
-- [11. Troubleshooting](#11-troubleshooting)
+- [4. Công nghệ kỹ thuật chi tiết](#4-công-nghệ-kỹ-thuật-chi-tiết)
+- [5. Điểm nổi bật đặc biệt](#5-điểm-nổi-bật-đặc-biệt)
+- [6. English Project Description](#6-english-project-description)
+- [7. Cấu trúc dự án](#7-cấu-trúc-dự-án)
+- [8. Yêu cầu hệ thống](#8-yêu-cầu-hệ-thống)
+- [9. Khởi động nhanh](#9-khởi-động-nhanh)
+- [10. Cấu hình quan trọng](#10-cấu-hình-quan-trọng)
+- [11. API và MQTT contract](#11-api-và-mqtt-contract)
+- [12. Build firmware ESP32](#12-build-firmware-esp32)
+- [13. Tài liệu nội bộ](#13-tài-liệu-nội-bộ)
+- [14. Troubleshooting](#14-troubleshooting)
 
 ## 1. Tổng quan
 
@@ -63,7 +66,62 @@ ESP32-CAM (station/)                 ESP32 Motor (SIN/)
 - Tích hợp nhận diện khuôn mặt (InsightFace) ở phía server.
 - Hỗ trợ thông báo Telegram (tùy chọn qua biến môi trường).
 
-## 4. Cấu trúc dự án
+## 4. Công nghệ kỹ thuật chi tiết
+
+### Backend và giao tiếp thời gian thực
+
+- **FastAPI + Uvicorn** cho REST API và web dashboard tốc độ cao, dễ mở rộng.
+- **TCP streaming (port 8765)** nhận frame JPEG từ ESP32-CAM theo framing `[4-byte length][payload]`.
+- **MQTT (Eclipse Mosquitto)** cho điều khiển robot theo mô hình publish/subscribe, tách rời producer/consumer.
+
+### AI/Computer Vision
+
+- **YOLOv8 (Ultralytics)** để phát hiện người thời gian thực.
+- **OpenCV + NumPy** xử lý ảnh, hậu xử lý bbox/tâm đối tượng, phục vụ điều hướng.
+- **InsightFace + ONNXRuntime GPU** cho nhận diện khuôn mặt và tăng tốc suy luận khi có CUDA.
+
+### Data layer và telemetry
+
+- **PostgreSQL + SQLAlchemy** lưu lịch sử phát hiện, cảnh báo cảm biến, dữ liệu vận hành.
+- Cấu hình tập trung qua `server/config.py` + biến môi trường giúp triển khai linh hoạt Local/Docker.
+
+### Embedded/Firmware
+
+- **ESP-IDF** cho cả `station/` và `SIN/`.
+- `station/`: pipeline camera + gửi ảnh TCP.
+- `SIN/`: điều khiển motor TB6612, nhận lệnh MQTT, đọc cảm biến (PIR, khoảng cách) và phát alert.
+
+### Deployment và vận hành
+
+- **Docker Compose** dựng nhanh 3 service chính: `server`, `mosquitto`, `postgres`.
+- Healthcheck service giúp hệ thống startup theo dependency và giảm lỗi race condition.
+
+## 5. Điểm nổi bật đặc biệt
+
+- **Kiến trúc lai edge + server**: tác vụ phần cứng ở ESP32, tác vụ AI nặng đặt ở server để đạt cân bằng hiệu năng/chi phí.
+- **Điều khiển closed-loop theo thị giác máy tính**: phát hiện mục tiêu -> chuyển thành lệnh điều hướng -> phản hồi từ sensor.
+- **Tách kênh giao tiếp theo vai trò**:
+  - TCP tối ưu cho stream ảnh.
+  - MQTT tối ưu cho command/telemetry event-driven.
+- **Khả năng vận hành thực tế**: có dashboard, lưu lịch sử DB, cảnh báo Telegram, và tài liệu thuật toán tránh vật cản.
+- **Dễ mở rộng**:
+  - Thay model AI (YOLO variant) không đổi kiến trúc tổng thể.
+  - Thêm sensor/topic MQTT mới mà ít ảnh hưởng module hiện hữu.
+
+## 6. English Project Description
+
+Robot Security System is a real-time AI-powered security robotics platform that combines ESP32 edge devices with a Python server stack.
+
+The system ingests camera frames from an ESP32-CAM over TCP, performs person detection (YOLOv8) and optional face recognition (InsightFace), then publishes control commands to a motor controller board via MQTT. In parallel, sensor alerts and operational events are persisted to PostgreSQL and visualized through a FastAPI-based web dashboard.
+
+### Key technical strengths
+
+- Hybrid edge-server architecture for cost-efficient real-time intelligence.
+- Decoupled communication channels: TCP for video transport, MQTT for control and telemetry.
+- Production-friendly deployment using Docker Compose (API + broker + database).
+- Extensible design for additional sensors, control modes, and AI models.
+
+## 7. Cấu trúc dự án
 
 ```text
 ROBOT/
@@ -78,7 +136,7 @@ ROBOT/
 └─ README.md
 ```
 
-## 5. Yêu cầu hệ thống
+## 8. Yêu cầu hệ thống
 
 ### Server
 
@@ -90,7 +148,7 @@ ROBOT/
 - ESP-IDF phù hợp với `station/` và `SIN/`
 - Toolchain build cho ESP32/ESP32-CAM
 
-## 6. Khởi động nhanh
+## 9. Khởi động nhanh
 
 ### Cách 1: Chạy full stack bằng Docker (khuyến nghị)
 
@@ -121,7 +179,7 @@ pip install -r requirements.txt
 python server.py
 ```
 
-## 7. Cấu hình quan trọng
+## 10. Cấu hình quan trọng
 
 ### File cấu hình chính
 
@@ -140,7 +198,7 @@ python server.py
 | `HEADLESS` | `1` | Chế độ không hiển thị cửa sổ GUI |
 | `TELEGRAM_ENABLED` | `0` | Bật/tắt gửi cảnh báo Telegram |
 
-## 8. API và MQTT contract
+## 11. API và MQTT contract
 
 ### API chính
 
@@ -163,7 +221,7 @@ python server.py
 | `robot/command` | Server -> ESP32 | `{action}` |
 | `robot/alert` | ESP32 -> Server | `{type, detail, distance_mm, pir}` |
 
-## 9. Build firmware ESP32
+## 12. Build firmware ESP32
 
 ```bash
 # Station (ESP32-CAM)
@@ -175,7 +233,7 @@ cd ../SIN
 idf.py build flash monitor
 ```
 
-## 10. Tài liệu nội bộ
+## 13. Tài liệu nội bộ
 
 - Kiến trúc và flowchart: `docs/project_flowcharts.html`, `docs/robot_flowchart.drawio`
 - Tổng quan quy trình: `docs/TONG_QUAN_QUY_TRINH_HE_THONG.md`
@@ -184,7 +242,7 @@ idf.py build flash monitor
 - Notebook thử nghiệm: `notebooks/notebooked4c917f13.ipynb`
 - Script trích xuất notebook: `tools/notebook/run_notebook_extract.bat`
 
-## 11. Troubleshooting
+## 14. Troubleshooting
 
 ### 1) MQTT không kết nối được
 
