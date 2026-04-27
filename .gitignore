@@ -20,6 +20,14 @@ env/
 .DS_Store
 Thumbs.db
 
+# Temporary / backup files
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+~$*
+
 # Build outputs
 build/
 dist/
