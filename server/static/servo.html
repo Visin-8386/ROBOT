@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servo Control - Robot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --border: rgba(55, 65, 81, 0.5);
+            --accent: #38bdf8;
+            --accent-green: #34d399;
+            --accent-yellow: #fbbf24;
+            --accent-red: #f87171;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --glass-border: rgba(148, 163, 184, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(167, 139, 250, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .button-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-left {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-left:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-right {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-right:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-center {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-center:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .status-box {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+        }
+
+        .status-value {
+            color: var(--accent);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .alert-icon {
+            font-size: 16px;
+        }
+
+        .info-box {
+            background: rgba(167, 139, 250, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        .info-box strong {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">📷</div>
+            <h1>Servo Control</h1>
+            <p class="subtitle">Điều khiển servo camera từ xa</p>
+        </header>
+
+        <div class="panel">
+            <!-- Alert -->
+            <div class="alert success" id="successAlert">
+                <span class="alert-icon">✓</span>
+                <span id="successMsg">Lệnh đã gửi thành công!</span>
+            </div>
+            <div class="alert error" id="errorAlert">
+                <span class="alert-icon">✕</span>
+                <span id="errorMsg">Lỗi kết nối!</span>
+            </div>
+
+            <!-- Servo Commands -->
+            <div class="section">
+                <div class="section-title">📍 Vị Trí Servo</div>
+                <div class="button-group">
+                    <button class="btn btn-left" onclick="sendCommand('servo_left')">
+                        ← Xoay Trái
+                    </button>
+                    <button class="btn btn-right" onclick="sendCommand('servo_right')">
+                        Xoay Phải →
+                    </button>
+                </div>
+                <button class="btn btn-center full" onclick="sendCommand('servo_center')">
+                    ⊙ Trả Về Center
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="section">
+                <div class="section-title">📊 Trạng Thái</div>
+                <div class="status-box">
+                    <div class="status-item">
+                        <span class="status-label">Kết nối:</span>
+                        <span class="status-value">
+                            <span class="loading"></span> Sẵn sàng
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Servo Position:</span>
+                        <span class="status-value" id="servoStatus">1500 µs</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Thời Gian:</span>
+                        <span class="status-value" id="currentTime">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="info-box">
+                <strong>💡 Hướng dẫn:</strong><br>
+                • <strong>Xoay Trái</strong>: Servo quay sang trái, robot xoay trái, servo trả về<br>
+                • <strong>Xoay Phải</strong>: Servo quay sang phải, robot xoay phải, servo trả về<br>
+                • <strong>Center</strong>: Servo trả về vị trí trung tâm (90°)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/servo';
+        let lastCommand = null;
+        let lastCommandTime = null;
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Show alert
+        function showAlert(type, message, duration = 3000) {
+            const alertEl = document.getElementById(type + 'Alert');
+            const msgEl = document.getElementById(type + 'Msg');
+            msgEl.textContent = message;
+            alertEl.classList.add('show');
+            setTimeout(() => alertEl.classList.remove('show'), duration);
+        }
+
+        // Send command
+        async function sendCommand(action) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                lastCommand = action;
+                lastCommandTime = new Date();
+
+                let message = '';
+                switch(action) {
+                    case 'servo_left':
+                        message = '↙️ Servo xoay sang trái...';
+                        break;
+                    case 'servo_right':
+                        message = '↗️ Servo xoay sang phải...';
+                        break;
+                    case 'servo_center':
+                        message = '⊙ Servo trả về center!';
+                        break;
+                }
+
+                showAlert('success', message);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('error', `Lỗi: ${error.message}`, 4000);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' || e.key === 'A') sendCommand('servo_left');
+            if (e.key === 'd' || e.key === 'D') sendCommand('servo_right');
+            if (e.key === ' ') {
+                e.preventDefault();
+                sendCommand('servo_center');
+            }
+        });
+    </script>
+</body>
+</html>

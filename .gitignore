@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+dist/
+
+# Flutter
+flutter_application/.dart_tool/
+flutter_application/build/
+flutter_application/.packages
+flutter_application/.flutter-plugins
+flutter_application/.flutter-plugins-dependencies
+
+# ESP-IDF
+SIN/build/
+station/build/

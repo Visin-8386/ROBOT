@@ -1,0 +1,6 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting paho-mqtt
+  Downloading paho_mqtt-2.1.0-py3-none-any.whl.metadata (23 kB)
+Downloading paho_mqtt-2.1.0-py3-none-any.whl (67 kB)
+Installing collected packages: paho-mqtt
+Successfully installed paho-mqtt-2.1.0

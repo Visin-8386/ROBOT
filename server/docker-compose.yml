@@ -1,0 +1,75 @@
+services:
+  # ---- PostgreSQL ----
+  postgres:
+    image: postgres:16-alpine
+    container_name: robot_db
+    environment:
+      POSTGRES_DB: robot
+      POSTGRES_USER: robot
+      POSTGRES_PASSWORD: robot123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U robot"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: "no"
+    networks:
+      - robot_net
+
+  # ---- MQTT Broker ----
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mqtt_broker
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/passwd:/mosquitto/config/passwd
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -u robot -P robot123 -t '$$SYS/#' -C 1 -W 3 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: "no"
+    networks:
+      - robot_net
+
+  # ---- Detection Server + API ----
+  server:
+    build: .
+    container_name: detection_server
+    ports:
+      - "8765:8765"
+      - "8000:8000"
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_USERNAME=robot
+      - MQTT_PASSWORD=robot123
+      - DATABASE_URL=postgresql://robot:robot123@postgres:5432/robot
+      - HEADLESS=1
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - TELEGRAM_ENABLED=${TELEGRAM_ENABLED:-0}
+      - TELEGRAM_COOLDOWN=${TELEGRAM_COOLDOWN:-30}
+    volumes:
+      - detection_images:/app/images
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - robot_net
+
+volumes:
+  pg_data:
+  detection_images:
+
+networks:
+  robot_net:
+    driver: bridge
