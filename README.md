@@ -8,6 +8,7 @@ A real-time AI security robotics platform that combines ESP32 edge devices, comp
 - [2. System Architecture](#2-system-architecture)
 - [3. Core Features](#3-core-features)
 - [4. Technical Stack Deep Dive](#4-technical-stack-deep-dive)
+- [4.1 Algorithms Used](#41-algorithms-used)
 - [5. Key Differentiators](#5-key-differentiators)
 - [6. English Project Description](#6-english-project-description)
 - [7. Project Structure](#7-project-structure)
@@ -95,6 +96,29 @@ ESP32-CAM (station/)                 ESP32 Motor (SIN/)
 
 - **Docker Compose** provisions core services: `server`, `mosquitto`, `postgres`.
 - Health checks reduce startup race conditions and improve service readiness.
+
+### 4.1 Algorithms Used
+
+This project uses multiple algorithms across perception, tracking, control, and obstacle handling.
+
+| Algorithm | Purpose | Implementation |
+|------|------|------|
+| YOLOv8 object detection | Real-time person/pet detection from camera frames | `server/detector.py` |
+| Image preprocessing pipeline (Gaussian blur + CLAHE + unsharp mask) | Improve low-light/noisy frame quality before inference | `server/detector.py` |
+| SORT multi-object tracking | Keep stable target IDs across frames and reduce detection jitter | `server/tracker.py` |
+| Kalman filter (state prediction/update) | Predict object motion (`cx, cy, w, h`) and smooth tracking | `server/tracker.py` |
+| Hungarian assignment + IoU matching | Associate current detections to existing tracks | `server/tracker.py` |
+| Largest-target / lock-on selection | Prioritize nearest or persisted target for robot reaction | `server/detector.py` |
+| Closed-loop visual servoing (proportional control + dead zone) | Convert target offset to pan/tilt actions | `server/config.py`, `server/server.py` |
+| FSM-based robot modes (Monitor/Patrol/Chase/Manual) | Switch behavior according to context and user control | `server/server.py`, `SIN/main/main.c` |
+| Obstacle-avoidance thresholds + scan strategy | Soft avoid, hard stop, and directional bypass logic | `SIN/main/sensor.c`, `SIN/main/main.c` |
+| Ultrasonic distance conversion | Convert echo pulse time to distance measurement | `SIN/main/distance_sensor_hcsr04.c` |
+
+Related algorithm documentation and diagrams:
+
+- Obstacle-avoidance deep dive: [docs/THUẬT_TOÁN_NÉ_VẬT_CẢN_CHI_TIẾT.md](docs/THUẬT_TOÁN_NÉ_VẬT_CẢN_CHI_TIẾT.md)
+- System flowcharts: [docs/project_flowcharts.html](docs/project_flowcharts.html)
+- Draw.io source: [docs/robot_flowchart.drawio](docs/robot_flowchart.drawio)
 
 ## 5. Key Differentiators
 
