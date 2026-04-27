@@ -1,35 +1,35 @@
 # Robot Security System
 
-Hệ thống robot an ninh tích hợp AI nhận diện người, điều khiển robot qua MQTT, giám sát thời gian thực trên Web Dashboard và lưu lịch sử sự kiện vào PostgreSQL.
+A real-time AI security robotics platform that combines ESP32 edge devices, computer vision, MQTT control, a web dashboard, and PostgreSQL event persistence.
 
-## Mục lục
+## Table of Contents
 
-- [1. Tổng quan](#1-tổng-quan)
-- [2. Kiến trúc hệ thống](#2-kiến-trúc-hệ-thống)
-- [3. Tính năng chính](#3-tính-năng-chính)
-- [4. Công nghệ kỹ thuật chi tiết](#4-công-nghệ-kỹ-thuật-chi-tiết)
-- [5. Điểm nổi bật đặc biệt](#5-điểm-nổi-bật-đặc-biệt)
+- [1. Overview](#1-overview)
+- [2. System Architecture](#2-system-architecture)
+- [3. Core Features](#3-core-features)
+- [4. Technical Stack Deep Dive](#4-technical-stack-deep-dive)
+- [5. Key Differentiators](#5-key-differentiators)
 - [6. English Project Description](#6-english-project-description)
-- [7. Cấu trúc dự án](#7-cấu-trúc-dự-án)
-- [8. Yêu cầu hệ thống](#8-yêu-cầu-hệ-thống)
-- [9. Khởi động nhanh](#9-khởi-động-nhanh)
-- [10. Cấu hình quan trọng](#10-cấu-hình-quan-trọng)
-- [11. API và MQTT contract](#11-api-và-mqtt-contract)
-- [12. Build firmware ESP32](#12-build-firmware-esp32)
-- [13. Tài liệu nội bộ](#13-tài-liệu-nội-bộ)
+- [7. Project Structure](#7-project-structure)
+- [8. System Requirements](#8-system-requirements)
+- [9. Quick Start](#9-quick-start)
+- [10. Configuration Guide](#10-configuration-guide)
+- [11. API and MQTT Contracts](#11-api-and-mqtt-contracts)
+- [12. ESP32 Firmware Build](#12-esp32-firmware-build)
+- [13. Internal Documentation](#13-internal-documentation)
 - [14. Troubleshooting](#14-troubleshooting)
 
-## 1. Tổng quan
+## 1. Overview
 
-Robot Security System gồm 3 khối chính:
+Robot Security System has three primary subsystems:
 
-- **Station (ESP32-CAM)**: gửi frame JPEG về server qua TCP.
-- **SIN (ESP32 điều khiển chuyển động)**: nhận lệnh MQTT, đọc sensor, phát cảnh báo.
-- **Server (FastAPI + AI + DB)**: nhận ảnh, chạy YOLO, điều phối robot, hiển thị dashboard, lưu lịch sử.
+- **Station (ESP32-CAM)**: captures and streams JPEG frames to the server over TCP.
+- **SIN (ESP32 motion controller)**: receives MQTT commands, reads sensors, and publishes alerts.
+- **Server (FastAPI + AI + DB)**: performs detection, orchestrates control flow, serves the dashboard, and stores events.
 
-Mục tiêu của hệ thống là giám sát tự động, phản ứng theo tình huống và hỗ trợ điều khiển thủ công từ giao diện web.
+The platform is designed for autonomous monitoring, event-driven response, and manual override through a browser-based control panel.
 
-## 2. Kiến trúc hệ thống
+## 2. System Architecture
 
 ```text
 ESP32-CAM (station/)                 ESP32 Motor (SIN/)
@@ -50,63 +50,63 @@ ESP32-CAM (station/)                 ESP32 Motor (SIN/)
                  Browser (http://localhost:8000)
 ```
 
-### Luồng dữ liệu chính
+### Main Data Flow
 
-1. `station/` gửi JPEG về TCP server.
-2. `server/` detect người, tính vị trí và publish MQTT.
-3. `SIN/` nhận lệnh điều khiển và gửi trạng thái/sensor alert.
-4. Dashboard hiển thị stream, trạng thái và lịch sử sự kiện.
+1. `station/` streams JPEG frames to the TCP server.
+2. `server/` runs person detection and publishes control-related data to MQTT.
+3. `SIN/` consumes commands and publishes sensor/alert telemetry.
+4. The dashboard visualizes live stream, status, and historical events.
 
-## 3. Tính năng chính
+## 3. Core Features
 
-- Phát hiện người thời gian thực bằng YOLO.
-- Điều khiển robot theo chế độ vận hành (Monitor, Patrol, Chase, Manual).
-- Dashboard điều khiển trực tiếp bằng nút và phím tắt.
-- Lưu lịch sử detection/alert vào PostgreSQL.
-- Tích hợp nhận diện khuôn mặt (InsightFace) ở phía server.
-- Hỗ trợ thông báo Telegram (tùy chọn qua biến môi trường).
+- Real-time person detection with YOLOv8.
+- Multi-mode control model (Monitor, Patrol, Chase, Manual).
+- Interactive web dashboard with button and keyboard control.
+- PostgreSQL persistence for detections, alerts, and operational history.
+- Optional face recognition pipeline (InsightFace).
+- Optional Telegram notifications via environment configuration.
 
-## 4. Công nghệ kỹ thuật chi tiết
+## 4. Technical Stack Deep Dive
 
-### Backend và giao tiếp thời gian thực
+### Backend and Real-Time Communication
 
-- **FastAPI + Uvicorn** cho REST API và web dashboard tốc độ cao, dễ mở rộng.
-- **TCP streaming (port 8765)** nhận frame JPEG từ ESP32-CAM theo framing `[4-byte length][payload]`.
-- **MQTT (Eclipse Mosquitto)** cho điều khiển robot theo mô hình publish/subscribe, tách rời producer/consumer.
+- **FastAPI + Uvicorn** for high-performance APIs and dashboard serving.
+- **TCP streaming (port 8765)** for JPEG frame ingestion using `[4-byte length][payload]` framing.
+- **MQTT (Eclipse Mosquitto)** for decoupled command-and-telemetry messaging.
 
 ### AI/Computer Vision
 
-- **YOLOv8 (Ultralytics)** để phát hiện người thời gian thực.
-- **OpenCV + NumPy** xử lý ảnh, hậu xử lý bbox/tâm đối tượng, phục vụ điều hướng.
-- **InsightFace + ONNXRuntime GPU** cho nhận diện khuôn mặt và tăng tốc suy luận khi có CUDA.
+- **YOLOv8 (Ultralytics)** for real-time person detection.
+- **OpenCV + NumPy** for image transforms and geometric post-processing.
+- **InsightFace + ONNXRuntime GPU** for face recognition and accelerated inference when CUDA is available.
 
-### Data layer và telemetry
+### Data Layer and Telemetry
 
-- **PostgreSQL + SQLAlchemy** lưu lịch sử phát hiện, cảnh báo cảm biến, dữ liệu vận hành.
-- Cấu hình tập trung qua `server/config.py` + biến môi trường giúp triển khai linh hoạt Local/Docker.
+- **PostgreSQL + SQLAlchemy** for event persistence and queryable operational history.
+- Centralized config via `server/config.py` and environment variables for Local/Docker parity.
 
 ### Embedded/Firmware
 
-- **ESP-IDF** cho cả `station/` và `SIN/`.
-- `station/`: pipeline camera + gửi ảnh TCP.
-- `SIN/`: điều khiển motor TB6612, nhận lệnh MQTT, đọc cảm biến (PIR, khoảng cách) và phát alert.
+- **ESP-IDF** is used for both `station/` and `SIN/` firmware.
+- `station/`: camera capture and TCP frame transport.
+- `SIN/`: TB6612 motor control, MQTT command handling, PIR/distance sensor telemetry.
 
-### Deployment và vận hành
+### Deployment and Operations
 
-- **Docker Compose** dựng nhanh 3 service chính: `server`, `mosquitto`, `postgres`.
-- Healthcheck service giúp hệ thống startup theo dependency và giảm lỗi race condition.
+- **Docker Compose** provisions core services: `server`, `mosquitto`, `postgres`.
+- Health checks reduce startup race conditions and improve service readiness.
 
-## 5. Điểm nổi bật đặc biệt
+## 5. Key Differentiators
 
-- **Kiến trúc lai edge + server**: tác vụ phần cứng ở ESP32, tác vụ AI nặng đặt ở server để đạt cân bằng hiệu năng/chi phí.
-- **Điều khiển closed-loop theo thị giác máy tính**: phát hiện mục tiêu -> chuyển thành lệnh điều hướng -> phản hồi từ sensor.
-- **Tách kênh giao tiếp theo vai trò**:
-  - TCP tối ưu cho stream ảnh.
-  - MQTT tối ưu cho command/telemetry event-driven.
-- **Khả năng vận hành thực tế**: có dashboard, lưu lịch sử DB, cảnh báo Telegram, và tài liệu thuật toán tránh vật cản.
-- **Dễ mở rộng**:
-  - Thay model AI (YOLO variant) không đổi kiến trúc tổng thể.
-  - Thêm sensor/topic MQTT mới mà ít ảnh hưởng module hiện hữu.
+- **Hybrid edge-server architecture**: low-cost edge control with scalable server-side AI.
+- **Closed-loop CV-driven control**: perception -> command generation -> sensor feedback.
+- **Channel specialization**:
+  - TCP for image transport.
+  - MQTT for event-driven command and telemetry.
+- **Operations-ready foundation**: dashboard, persistence, notifications, and supporting technical docs.
+- **Modular extensibility**:
+  - Swap AI model variants without redesigning the pipeline.
+  - Add sensors/topics with minimal cross-module impact.
 
 ## 6. English Project Description
 
@@ -121,107 +121,107 @@ The system ingests camera frames from an ESP32-CAM over TCP, performs person det
 - Production-friendly deployment using Docker Compose (API + broker + database).
 - Extensible design for additional sensors, control modes, and AI models.
 
-## 7. Cấu trúc dự án
+## 7. Project Structure
 
 ```text
 ROBOT/
 ├─ server/                 # Backend FastAPI, AI detection, DB, MQTT
 ├─ station/                # ESP32-CAM firmware
 ├─ SIN/                    # ESP32 motor/sensor firmware
-├─ flutter_application/    # Ứng dụng Flutter (nếu dùng)
-├─ docs/                   # Tài liệu dự án, flowchart, slide
-├─ notebooks/              # Notebook phân tích/thử nghiệm
-├─ tools/notebook/         # Script tiện ích cho notebook
-├─ docker-compose.yml      # Compose root (hạ tầng cơ bản)
+├─ flutter_application/    # Flutter app (optional)
+├─ docs/                   # Project documents, flowcharts, slides
+├─ notebooks/              # Research/experiment notebooks
+├─ tools/notebook/         # Notebook utility scripts
+├─ docker-compose.yml      # Root-level infrastructure compose
 └─ README.md
 ```
 
-## 8. Yêu cầu hệ thống
+## 8. System Requirements
 
 ### Server
 
-- Docker + Docker Compose (khuyến nghị)
-- Hoặc Python 3.10+ nếu chạy local
+- Docker + Docker Compose (recommended)
+- Or Python 3.10+ for local runtime
 
 ### Firmware
 
-- ESP-IDF phù hợp với `station/` và `SIN/`
-- Toolchain build cho ESP32/ESP32-CAM
+- ESP-IDF compatible with both `station/` and `SIN/`
+- ESP32/ESP32-CAM build toolchain
 
-## 9. Khởi động nhanh
+## 9. Quick Start
 
-### Cách 1: Chạy full stack bằng Docker (khuyến nghị)
+### Option 1: Full stack via Docker (recommended)
 
 ```bash
 cd server
 docker-compose up --build
 ```
 
-Sau khi chạy:
+After startup:
 
 - Dashboard: `http://localhost:8000`
 - TCP receiver: `localhost:8765`
 - MQTT broker: `localhost:1883`
 - PostgreSQL: `localhost:5432`
 
-### Cách 2: Chạy server local + dịch vụ bằng Docker
+### Option 2: Local server with Dockerized services
 
 ```bash
 cd server
 
-# 1) Khởi động DB + MQTT
+# 1) Start DB + MQTT
 docker-compose up postgres mosquitto -d
 
-# 2) Cài dependencies
+# 2) Install dependencies
 pip install -r requirements.txt
 
-# 3) Chạy backend
+# 3) Run backend
 python server.py
 ```
 
-## 10. Cấu hình quan trọng
+## 10. Configuration Guide
 
-### File cấu hình chính
+### Primary Configuration Files
 
-- `server/config.py`: cổng server, MQTT, DB URL, YOLO threshold, face recognition, Telegram.
-- `SIN/main/config.h`: Wi-Fi, broker MQTT, chân GPIO motor/sensor, ngưỡng cảm biến.
-- `station/main/config.h`: Wi-Fi, địa chỉ server TCP, tham số camera.
+- `server/config.py`: server ports, MQTT, DB URL, YOLO threshold, face recognition, Telegram settings.
+- `SIN/main/config.h`: Wi-Fi, MQTT broker, motor/sensor GPIO mapping, sensor thresholds.
+- `station/main/config.h`: Wi-Fi, TCP server target, camera parameters.
 
-### Biến môi trường quan trọng (server)
+### Important Environment Variables (server)
 
-| Biến | Mặc định | Mô tả |
+| Variable | Default | Description |
 |------|----------|-------|
-| `MQTT_BROKER` | `localhost` | Địa chỉ MQTT broker |
-| `MQTT_PORT` | `1883` | Cổng MQTT |
-| `DATABASE_URL` | `postgresql://robot:robot123@localhost:5432/robot` | Chuỗi kết nối DB |
-| `CONFIDENCE_THRESHOLD` | `0.35` | Ngưỡng confidence YOLO |
-| `HEADLESS` | `1` | Chế độ không hiển thị cửa sổ GUI |
-| `TELEGRAM_ENABLED` | `0` | Bật/tắt gửi cảnh báo Telegram |
+| `MQTT_BROKER` | `localhost` | MQTT broker host |
+| `MQTT_PORT` | `1883` | MQTT broker port |
+| `DATABASE_URL` | `postgresql://robot:robot123@localhost:5432/robot` | Database connection string |
+| `CONFIDENCE_THRESHOLD` | `0.35` | YOLO confidence threshold |
+| `HEADLESS` | `1` | Run without GUI windows |
+| `TELEGRAM_ENABLED` | `0` | Enable/disable Telegram alerts |
 
-## 11. API và MQTT contract
+## 11. API and MQTT Contracts
 
-### API chính
+### Main API Endpoints
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Description |
 |--------|----------|-------|
 | GET | `/` | Web dashboard |
-| GET | `/api/status` | Trạng thái robot hiện tại |
-| GET | `/api/stats` | Thống kê tổng hợp |
-| GET | `/api/events` | Lịch sử phát hiện đối tượng |
-| GET | `/api/alerts` | Lịch sử cảnh báo sensor |
-| GET | `/api/alerts/latest` | Cảnh báo mới nhất |
+| GET | `/api/status` | Current robot status |
+| GET | `/api/stats` | Aggregated metrics |
+| GET | `/api/events` | Detection history |
+| GET | `/api/alerts` | Sensor alert history |
+| GET | `/api/alerts/latest` | Latest alert |
 | GET | `/api/stream` | MJPEG stream |
-| POST | `/api/control?action=...` | Gửi lệnh điều khiển |
+| POST | `/api/control?action=...` | Send control action |
 
 ### MQTT topics
 
-| Topic | Direction | Payload mẫu |
+| Topic | Direction | Sample Payload |
 |-------|-----------|-------------|
 | `robot/position` | Server -> ESP32 | `{detected, x, y, pan, tilt}` |
 | `robot/command` | Server -> ESP32 | `{action}` |
 | `robot/alert` | ESP32 -> Server | `{type, detail, distance_mm, pir}` |
 
-## 12. Build firmware ESP32
+## 12. ESP32 Firmware Build
 
 ```bash
 # Station (ESP32-CAM)
@@ -233,40 +233,40 @@ cd ../SIN
 idf.py build flash monitor
 ```
 
-## 13. Tài liệu nội bộ
+## 13. Internal Documentation
 
-- Kiến trúc và flowchart: `docs/project_flowcharts.html`, `docs/robot_flowchart.drawio`
-- Tổng quan quy trình: `docs/TONG_QUAN_QUY_TRINH_HE_THONG.md`
-- Thuật toán tránh vật cản: `docs/THUẬT_TOÁN_NÉ_VẬT_CẢN_CHI_TIẾT.md`
-- Slide/presentation: `docs/presentations/`
-- Notebook thử nghiệm: `notebooks/notebooked4c917f13.ipynb`
-- Script trích xuất notebook: `tools/notebook/run_notebook_extract.bat`
+- Architecture and flowcharts: `docs/project_flowcharts.html`, `docs/robot_flowchart.drawio`
+- Process overview: `docs/TONG_QUAN_QUY_TRINH_HE_THONG.md`
+- Obstacle-avoidance algorithm notes: `docs/THUẬT_TOÁN_NÉ_VẬT_CẢN_CHI_TIẾT.md`
+- Slides and presentations: `docs/presentations/`
+- Experiment notebook: `notebooks/notebooked4c917f13.ipynb`
+- Notebook extraction helper: `tools/notebook/run_notebook_extract.bat`
 
 ## 14. Troubleshooting
 
-### 1) MQTT không kết nối được
+### 1) MQTT connection failures
 
-Kiểm tra lần lượt:
+Check the following in order:
 
-- Broker host/IP có đúng mạng không.
-- Port `1883` đã mở và broker đang chạy.
-- User/password MQTT khớp cấu hình.
+- Broker host/IP is reachable from each node.
+- Port `1883` is open and broker is running.
+- MQTT credentials match configured values.
 
-### 2) Sensor khoảng cách trả sai hoặc timeout (SIN)
+### 2) Distance sensor incorrect values or timeout (SIN)
 
-- Kiểm tra nguồn cấp và dây tín hiệu.
-- Kiểm tra đúng chế độ cảm biến đang dùng (VL53L0X hoặc HC-SR04).
-- Xác nhận wiring GPIO đúng với `SIN/main/config.h`.
+- Verify power delivery and signal wiring.
+- Confirm the active sensor mode (VL53L0X or HC-SR04).
+- Validate GPIO mapping in `SIN/main/config.h`.
 
-### 3) Không thấy video stream trên dashboard
+### 3) No video stream on dashboard
 
-- Xác nhận `station/` đang gửi TCP đến đúng IP server.
-- Kiểm tra port `8765` không bị chặn firewall.
-- Kiểm tra log `server/` xem có nhận frame không.
+- Confirm `station/` is sending TCP frames to the correct server IP.
+- Ensure port `8765` is not blocked by firewall.
+- Inspect `server/` logs for frame ingestion activity.
 
 ---
 
-Nếu bạn muốn, có thể tách README này thành 2 bản:
+Suggested next documentation split:
 
-- `README.md` cho onboarding nhanh (ngắn gọn)
-- `docs/OPERATIONS.md` cho vận hành chi tiết (production checklist)
+- `README.md` for concise onboarding.
+- `docs/OPERATIONS.md` for production-grade runbooks and checklists.
